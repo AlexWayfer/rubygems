@@ -312,7 +312,6 @@ class Gem::TestCase < Minitest::Test
     ENV['XDG_DATA_HOME'] = nil
     ENV['SOURCE_DATE_EPOCH'] = nil
     ENV['BUNDLER_VERSION'] = nil
-    ENV["TMPDIR"] = @tmp
 
     @current_dir = Dir.pwd
     @fetcher     = nil
@@ -323,13 +322,10 @@ class Gem::TestCase < Minitest::Test
     # capture output
     Gem::DefaultUserInteraction.ui = Gem::MockGemUi.new
 
-    tmpdir = File.realpath Dir.tmpdir
-    tmpdir.tap(&Gem::UNTAINT)
-
-    @tempdir = File.join(tmpdir, "test_rubygems_#{$$}")
+    @tempdir = Dir.mktmpdir("test_rubygems_", @tmp)
     @tempdir.tap(&Gem::UNTAINT)
 
-    FileUtils.mkdir_p @tempdir
+    ENV["TMPDIR"] = @tmp
 
     @orig_SYSTEM_WIDE_CONFIG_FILE = Gem::ConfigFile::SYSTEM_WIDE_CONFIG_FILE
     Gem::ConfigFile.send :remove_const, :SYSTEM_WIDE_CONFIG_FILE
@@ -451,6 +447,7 @@ class Gem::TestCase < Minitest::Test
     Dir.chdir @current_dir
 
     FileUtils.rm_rf @tempdir
+    FileUtils.rm_rf @tmp
 
     ENV.replace(@orig_env)
 
