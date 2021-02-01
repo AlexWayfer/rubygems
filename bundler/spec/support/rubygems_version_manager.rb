@@ -78,6 +78,7 @@ class RubygemsVersionManager
   end
 
   def rubygems_unrequire_needed?
+    return false if RUBY_ENGINE == "truffleruby" # lazily loads rubygems
     !$LOADED_FEATURES.include?(local_copy_path.join("lib/rubygems.rb").to_s)
   end
 
